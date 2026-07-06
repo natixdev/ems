@@ -29,3 +29,16 @@ updated_at = Annotated[
 ]
 str_uniq = Annotated[str, mapped_column(unique=True, nullable=False)]
 str_null_true = Annotated[str, mapped_column(nullable=True)]
+
+
+class Base(AsyncAttrs, DeclarativeBase):
+    """Абстрактный класс с дополнительными полями created_at, updated_at."""
+
+    __abstract__ = True
+
+    @declared_attr.directive
+    def __tablename__(self) -> str:
+        return f'{self.__name__.lower()}s'
+
+    created_at: Mapped[created_at]
+    updated_at: Mapped[updated_at]
