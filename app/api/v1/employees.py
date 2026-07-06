@@ -17,7 +17,7 @@ router = APIRouter(prefix='/employees', tags=['Управление работн
 async def employee_list(
     filters: EmployeeFilters = Depends(),
 ) -> list[EmployeeOut]:
-    """Возвращает список работников с учетом фильтров (если указаны).
+    """Возвращает список сотрудников с учетом фильтров (если указаны).
 
     Фильтры:
       - id: точное совпадение
