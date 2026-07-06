@@ -1,8 +1,13 @@
 """Показывает эндпоинты."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
-from app.employees.schemas import EmployeeFilters, EmployeeOut
+from app.employees.schemas import (
+    EmployeeBase,
+    EmployeeFilters,
+    EmployeeOut,
+    EmployeeUpdate,
+)
 from app.service import employees as employee_service
 
 router = APIRouter(prefix='/employees', tags=['Управление работниками'])
@@ -12,7 +17,7 @@ router = APIRouter(prefix='/employees', tags=['Управление работн
 async def employee_list(
     filters: EmployeeFilters = Depends(),
 ) -> list[EmployeeOut]:
-    """Возвращает список сотрудников с учетом фильтров (если указаны).
+    """Возвращает список работников с учетом фильтров (если указаны).
 
     Фильтры:
       - id: точное совпадение
@@ -23,3 +28,51 @@ async def employee_list(
     return await employee_service.employee_list(
         **filters.model_dump(exclude_none=True),
     )
+
+
+@router.post(
+    '/',
+    status_code=status.HTTP_201_CREATED,
+    summary='Добавить нового сотрудника',
+)
+async def create_employee(employee: EmployeeBase) -> dict:
+    """Добавляет нового работника."""
+    created_employee = await employee_service.create_employee(
+        **employee.dict(),
+    )
+    if created_employee:
+        return {'message': 'Работник успешно добавлен', 'employee': employee}
+    return {'message': 'Ошибка при добавлении работника'}
+
+
+@router.get('/{employee_id}', summary='Получить данные конкретного сотрудника')
+async def employee_detail(employee_id: int) -> EmployeeOut | dict:
+    """Возвращает данные конкретного сотрудника."""
+    result = await employee_service.employee_detail(employee_id)
+    if result is None:
+        return {'message': f'Работник с id = {employee_id} не найден'}
+    return result
+
+
+@router.patch(
+    '/{employee_id}',
+    response_model=EmployeeOut,
+    summary='Обновить данные конкретного сотрудника',
+)
+async def patch_employee(
+    employee_id: int,
+    employee_data_to_update: EmployeeUpdate,
+) -> EmployeeOut | None:
+    """Обновляет данные конкретного сотрудника частично."""
+    return await employee_service.patch_employee(
+        employee_id, **employee_data_to_update.model_dump(exclude_unset=True),
+    )
+
+
+@router.delete(
+    '/{employee_id}',
+    summary='Удалить данные конкретного сотрудника',
+)
+async def delete_employee(employee_id: int) -> dict:
+    """Удаляет данные конкретного сотрудника."""
+    return await employee_service.delete_employee(employee_id)
