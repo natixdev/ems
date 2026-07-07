@@ -2,7 +2,7 @@ from datetime import date
 
 from sqlalchemy.orm import Mapped
 
-from app.database import Base, int_pk, str_null_true, str_uniq
+from app.core.database import Base, int_pk, str_null_true, str_uniq
 
 
 class Employee(Base):

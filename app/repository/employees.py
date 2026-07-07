@@ -1,5 +1,6 @@
 """Все, что касается работы с данными и БД."""
 
+import logging
 from typing import Any
 
 from sqlalchemy import func, select
@@ -14,6 +15,9 @@ ILIKE_FIELDS = [
     'last_name',
     'phone_number',
 ]
+
+
+logger = logging.getLogger(__name__)
 
 
 class EmployeeRepository:

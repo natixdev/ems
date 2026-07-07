@@ -1,6 +1,6 @@
 """Вся бизнес-логика."""
 
-
+import logging
 from math import ceil
 
 from fastapi import HTTPException
@@ -21,6 +21,8 @@ from app.employees.schemas import (
 )
 from app.repository.employees import EmployeeRepository
 
+logger = logging.getLogger(__name__)
+
 
 class EmployeeService:
     """Бизнес-логика для сотрудников."""
@@ -36,6 +38,7 @@ class EmployeeService:
         size: int,
     ) -> EmployeePage:
         """Возвращает список данных отфильтрованных работников."""
+        logger.info('Fetching employee list page=%s size=%s', page, size)
         items, total = await self.repo.get_employee_filtered(
             filters, page, size,
         )
@@ -49,8 +52,10 @@ class EmployeeService:
 
     async def employee_detail(self, employee_id: int) -> EmployeeOut:
         """Запрашивает в БД работника по id."""
+        logger.info('Fetching employee detail employee_id=%s', employee_id)
         employee = await self.repo.find_employee_by_id(employee_id)
         if employee is None:
+            logger.warning('Employee not found')
             raise HTTPException(
                 status_code=404,
                 detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),
@@ -61,9 +66,14 @@ class EmployeeService:
         self, employee: EmployeeBase,
     ) -> EmployeeCreateResponse:
         """Создает нового работника."""
+        logger.info(
+            'Creating employee email=%s, phone=%s',
+            employee.email, employee.phone_number,
+        )
         if await self.repo.is_employee_exist(
             employee.email, employee.phone_number,
         ):
+            logger.warning('Duplicate employee')
             raise HTTPException(
                 status_code=400,
                 detail=EMPLOYEE_ALREADY_EXISTS,
@@ -83,8 +93,10 @@ class EmployeeService:
 
         Если работник не найден -- выбрасывает ошибку 404.
         """
+        logger.info('Updating employee employee_id=%s', employee_id)
         employee = await self.repo.find_employee_by_id(employee_id)
         if employee is None:
+            logger.warning('Employee not found')
             raise HTTPException(
                 status_code=404,
                 detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),
@@ -94,6 +106,7 @@ class EmployeeService:
             **employee_data.model_dump(exclude_unset=True),
         )
         if updated is None:
+            logger.warning('Employee not found')
             raise HTTPException(
                 status_code=404,
                 detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),
@@ -102,14 +115,17 @@ class EmployeeService:
 
     async def delete_employee(self, employee_id: int) -> dict:
         """Обрабатывает удаление работника по id."""
+        logger.info('Deleting employee employee_id=%s', employee_id)
         employee = self.repo.find_employee_by_id(employee_id)
         if employee is None:
+            logger.warning('Employee not found')
             raise HTTPException(
                 status_code=404,
                 detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),
             )
         result = await self.repo.delete_employee(employee_id)
         if not result:
+            logger.warning('Employee not found')
             raise HTTPException(
                 status_code=404,
                 detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),

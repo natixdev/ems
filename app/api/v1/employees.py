@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, Query, status
 from fastapi_filter import FilterDepends
 
-from app.dependency import get_employee_service
+from app.core.dependency import get_employee_service
 from app.employees.schemas import (
     EmployeeBase,
     EmployeeCreateResponse,

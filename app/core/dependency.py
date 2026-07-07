@@ -1,7 +1,7 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_session
+from app.core.database import get_session
 from app.repository.employees import EmployeeRepository
 from app.service.employees import EmployeeService
 

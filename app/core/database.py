@@ -14,7 +14,7 @@ from sqlalchemy.orm import (
     mapped_column,
 )
 
-from app.config import get_db_url
+from app.core.config import get_db_url
 
 DATABASE_URL = get_db_url()
 
