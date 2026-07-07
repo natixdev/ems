@@ -60,13 +60,26 @@ class EmployeeBase(EmployeeValidatorMixin, BaseModel):
     """Базовая схема работника."""
 
     last_name: str = Field(..., min_length=1, max_length=50)
-    first_name: str = Field(..., min_length=1, max_length=50 )
+    first_name: str = Field(..., min_length=1, max_length=50)
     middle_name: str | None = Field(None, max_length=50)
     date_of_birth: date
     sex: SexEnum
     photo: HttpUrl | None = None
     phone_number: str
     email: EmailStr
+
+
+class EmployeeUpdate(EmployeeValidatorMixin, BaseModel):
+    """Схема для частичного обновления сотрудника."""
+
+    last_name: str | None = Field(None, min_length=1, max_length=50)
+    first_name: str | None = Field(None, min_length=1, max_length=50)
+    middle_name: str | None = Field(None, max_length=50)
+    date_of_birth: date | None = None
+    sex: SexEnum | None = None
+    photo: HttpUrl | None = None
+    phone_number: str | None = None
+    email: EmailStr | None = None
 
 
 class EmployeeOut(BaseModel):
@@ -84,6 +97,23 @@ class EmployeeOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class EmployeeCreateResponse(BaseModel):
+    """Схема ответа при создании нового работника."""
+
+    message: str
+    employee: EmployeeOut
+
+
+class EmployeePage(BaseModel):
+    """Схема ответа при выводе списка работников с пагинацией."""
+
+    items: list[EmployeeOut]
+    total: int
+    page: int
+    size: int
+    pages: int
 
 
 class EmployeeFilter(Filter):
@@ -121,24 +151,3 @@ class EmployeeFilter(Filter):
                 Employee.date_of_birth <= birth_date_end,
             )
         return query
-
-
-class EmployeeUpdate(EmployeeValidatorMixin, BaseModel):
-    """Схема для частичного обновления сотрудника."""
-
-    last_name: str | None = Field(None, min_length=1, max_length=50)
-    first_name: str | None = Field(None, min_length=1, max_length=50)
-    middle_name: str | None = Field(None, max_length=50)
-    date_of_birth: date | None = None
-    sex: SexEnum | None = None
-    photo: HttpUrl | None = None
-    phone_number: str | None = None
-    email: EmailStr | None = None
-
-
-class EmployeePage(BaseModel):
-    items: list[EmployeeOut]
-    total: int
-    page: int
-    size: int
-    pages: int

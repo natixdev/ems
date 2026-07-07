@@ -1,11 +1,11 @@
 """Показывает эндпоинты."""
 
 from fastapi import APIRouter, Query, status
-from typing import Any
 from fastapi_filter import FilterDepends
 
 from app.employees.schemas import (
     EmployeeBase,
+    EmployeeCreateResponse,
     EmployeeFilter,
     EmployeePage,
     EmployeeOut,
@@ -30,31 +30,29 @@ async def employee_list(
       - age: возраст (будет найден по году рождения)
       - phone_number: точное совпадение.
     """
-    return await employee_service.employee_list(filters, page, size)
+    return await employee_service.employee_list(
+        filters=filters, page=page, size=size)
 
 
 @router.post(
     '/',
     status_code=status.HTTP_201_CREATED,
+    response_model=EmployeeCreateResponse,
     summary='Добавить нового сотрудника',
 )
-async def create_employee(employee: EmployeeBase) -> dict:
+async def create_employee(employee: EmployeeBase) -> EmployeeCreateResponse:
     """Добавляет нового работника."""
-    created_employee = await employee_service.create_employee(
-        **employee.dict(),
-    )
-    if created_employee:
-        return {'message': 'Работник успешно добавлен', 'employee': employee}
-    return {'message': 'Ошибка при добавлении работника'}
+    return await employee_service.create_employee(employee=employee)
 
 
-@router.get('/{employee_id}', summary='Получить данные конкретного сотрудника')
-async def employee_detail(employee_id: int) -> EmployeeOut | dict:
+@router.get(
+    '/{employee_id}',
+    response_model=EmployeeOut,
+    summary='Получить данные конкретного сотрудника'
+)
+async def employee_detail(employee_id: int) -> EmployeeOut:
     """Возвращает данные конкретного сотрудника."""
-    result = await employee_service.employee_detail(employee_id)
-    if result is None:
-        return {'message': f'Работник с id = {employee_id} не найден'}
-    return result
+    return await employee_service.employee_detail(employee_id=employee_id)
 
 
 @router.patch(
@@ -65,10 +63,11 @@ async def employee_detail(employee_id: int) -> EmployeeOut | dict:
 async def patch_employee(
     employee_id: int,
     employee_data_to_update: EmployeeUpdate,
-) -> EmployeeOut | None:
+) -> EmployeeOut:
     """Обновляет данные конкретного сотрудника частично."""
     return await employee_service.patch_employee(
-        employee_id, **employee_data_to_update.model_dump(exclude_unset=True),
+        employee_id=employee_id,
+        employee_data=employee_data_to_update,
     )
 
 
