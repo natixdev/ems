@@ -1,8 +1,9 @@
 """Показывает эндпоинты."""
 
-from fastapi import APIRouter, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from fastapi_filter import FilterDepends
 
+from app.dependency import get_employee_service
 from app.employees.schemas import (
     EmployeeBase,
     EmployeeCreateResponse,
@@ -11,7 +12,7 @@ from app.employees.schemas import (
     EmployeePage,
     EmployeeUpdate,
 )
-from app.service import employees as employee_service
+from app.service.employees import EmployeeService
 
 router = APIRouter(prefix='/employees', tags=['Управление работниками'])
 
@@ -25,6 +26,7 @@ async def employee_list(
     filters: EmployeeFilter = FilterDepends(EmployeeFilter),
     page: int = Query(1, ge=1, description='Номер страницы'),
     size: int = Query(10, ge=1, le=100, description='Размер страницы'),
+    service: EmployeeService = Depends(get_employee_service),
 ) -> EmployeePage:
     """Возвращает список работников с учетом фильтров (если указаны).
 
@@ -34,7 +36,7 @@ async def employee_list(
       - age: возраст (будет найден по году рождения)
       - phone_number: точное совпадение.
     """
-    return await employee_service.employee_list(
+    return await service.employee_list(
         filters=filters, page=page, size=size)
 
 
@@ -44,9 +46,12 @@ async def employee_list(
     response_model=EmployeeCreateResponse,
     summary='Добавить нового сотрудника',
 )
-async def create_employee(employee: EmployeeBase) -> EmployeeCreateResponse:
+async def create_employee(
+    employee: EmployeeBase,
+    service: EmployeeService = Depends(get_employee_service),
+) -> EmployeeCreateResponse:
     """Добавляет нового работника."""
-    return await employee_service.create_employee(employee=employee)
+    return await service.create_employee(employee=employee)
 
 
 @router.get(
@@ -54,9 +59,12 @@ async def create_employee(employee: EmployeeBase) -> EmployeeCreateResponse:
     response_model=EmployeeOut,
     summary='Получить данные конкретного сотрудника',
 )
-async def employee_detail(employee_id: int) -> EmployeeOut:
+async def employee_detail(
+    employee_id: int,
+    service: EmployeeService = Depends(get_employee_service),
+) -> EmployeeOut:
     """Возвращает данные конкретного сотрудника."""
-    return await employee_service.employee_detail(employee_id=employee_id)
+    return await service.employee_detail(employee_id=employee_id)
 
 
 @router.patch(
@@ -67,9 +75,10 @@ async def employee_detail(employee_id: int) -> EmployeeOut:
 async def patch_employee(
     employee_id: int,
     employee_data_to_update: EmployeeUpdate,
+    service: EmployeeService = Depends(get_employee_service),
 ) -> EmployeeOut:
     """Обновляет данные конкретного сотрудника частично."""
-    return await employee_service.patch_employee(
+    return await service.patch_employee(
         employee_id=employee_id,
         employee_data=employee_data_to_update,
     )
@@ -79,6 +88,9 @@ async def patch_employee(
     '/{employee_id}',
     summary='Удалить данные конкретного сотрудника',
 )
-async def delete_employee(employee_id: int) -> dict:
+async def delete_employee(
+    employee_id: int,
+    service: EmployeeService = Depends(get_employee_service),
+) -> dict:
     """Удаляет данные конкретного сотрудника."""
-    return await employee_service.delete_employee(employee_id=employee_id)
+    return await service.delete_employee(employee_id=employee_id)
