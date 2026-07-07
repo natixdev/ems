@@ -3,11 +3,8 @@
 
 from fastapi import HTTPException
 from math import ceil
-from sqlalchemy import select
-
 
 from app.database import async_session_maker
-from app.employees.models import Employee
 from app.employees.schemas import (
     EmployeeBase,
     EmployeeCreateResponse,
@@ -22,8 +19,14 @@ from app.repository.employees import (
     get_employee_filtered,
     is_employee_exist,
     update_employee,
+    delete_employee as delete_employee_by_id,
 )
-from app.repository.employees import delete_employee as delete_employee_by_id
+from app.employees.constants import (
+    EMPLOYEE_ALREADY_EXISTS,
+    EMPLOYEE_NOT_FOUND,
+    EMPLOYEE_DELETED,
+    EMPLOYEE_CREATED,
+)
 
 
 async def employee_list(
@@ -52,7 +55,7 @@ async def employee_detail(employee_id: int) -> EmployeeOut:
         if employee is None:
             raise HTTPException(
                 status_code=404,
-                detail=f'Работник с id = {employee_id} не найден'
+                detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),
             )
         return EmployeeOut.model_validate(employee)
 
@@ -65,12 +68,11 @@ async def create_employee(employee: EmployeeBase) -> EmployeeCreateResponse:
         ):
             raise HTTPException(
                 status_code=400,
-                detail='Работник с таким email и/или номером телефона'
-                ' существует',
+                detail=EMPLOYEE_ALREADY_EXISTS,
             )
         created = await add_employee(session, employee.model_dump())
         return EmployeeCreateResponse(
-            message='Работник успешно добавлен',
+            message=EMPLOYEE_CREATED,
             employee=EmployeeOut.model_validate(created),
         )
 
@@ -88,7 +90,7 @@ async def patch_employee(
         if employee is None:
             raise HTTPException(
                 status_code=404,
-                detail=f'Работник с id = {employee_id} не найден',
+                detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),
             )
         updated = await update_employee(
             session, employee_id,
@@ -97,7 +99,7 @@ async def patch_employee(
         if updated is None:
             raise HTTPException(
                 status_code=404,
-                detail=f'Работник с id = {employee_id} не найден'
+                detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),
             )
         return EmployeeOut.model_validate(updated)
 
@@ -109,12 +111,12 @@ async def delete_employee(employee_id: int) -> dict:
         if employee is None:
             raise HTTPException(
                 status_code=404,
-                detail=f'Работник с id = {employee_id} не найден',
+                detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),
             )
         result = await delete_employee_by_id(session, employee_id)
         if not result:
             raise HTTPException(
                 status_code=404,
-                detail=f'Работник с id = {employee_id} не найден'
+                detail=EMPLOYEE_NOT_FOUND.format(employee_id=employee_id),
             )
-        return {'message': 'Данные работника успешно удалены'}
+        return {'message': EMPLOYEE_DELETED}

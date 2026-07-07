@@ -8,6 +8,12 @@ from sqlalchemy.orm import Query
 from sqlalchemy.sql.selectable import Select
 
 from .models import Employee
+from .constants import (
+    INVALID_BIRTH_DATE_FUTURE,
+    INVALID_PHONE_FORMAT,
+    INVALID_AGE_MIN,
+    INVALID_AGE_MAX
+)
 
 PHONE_PATTERN = r'^(\+7)\d{10}$'
 MIN_AGE = 14
@@ -35,14 +41,14 @@ class EmployeeValidatorMixin:
             return value
         today = date.today()
         if value >= today:
-            raise ValueError('Дата рождения не может быть в будущем')
+            raise ValueError(INVALID_BIRTH_DATE_FUTURE)
         age = today.year - value.year - (
             (today.month, today.day) < (value.month, value.day)
         )
         if age < MIN_AGE:
-            raise ValueError(f'Возраст должен быть не менее {MIN_AGE} лет')
+            raise ValueError(INVALID_AGE_MIN.format(min_age=MIN_AGE))
         if age > MAX_AGE:
-            raise ValueError(f'Возраст должен быть не более {MAX_AGE} лет')
+            raise ValueError(INVALID_AGE_MAX.format(max_age=MAX_AGE))
         return value
 
     @field_validator('phone_number')
@@ -52,7 +58,7 @@ class EmployeeValidatorMixin:
         if value is None:
             return value
         if not re.match(PHONE_PATTERN, value):
-            raise ValueError('Введите номер телефона в формате +7XXXXXXXXXX')
+            raise ValueError(INVALID_PHONE_FORMAT)
         return value
 
 
