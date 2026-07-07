@@ -16,7 +16,11 @@ from app.service import employees as employee_service
 router = APIRouter(prefix='/employees', tags=['Управление работниками'])
 
 
-@router.get('/', summary='Получить список сотрудников')
+@router.get(
+    '/',
+    response_model=EmployeePage,
+    summary='Получить список сотрудников'
+)
 async def employee_list(
     filters: EmployeeFilter = FilterDepends(EmployeeFilter),
     page: int = Query(1, ge=1, description='Номер страницы'),
@@ -77,4 +81,4 @@ async def patch_employee(
 )
 async def delete_employee(employee_id: int) -> dict:
     """Удаляет данные конкретного сотрудника."""
-    return await employee_service.delete_employee(employee_id)
+    return await employee_service.delete_employee(employee_id=employee_id)

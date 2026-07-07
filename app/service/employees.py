@@ -5,9 +5,17 @@ from fastapi import HTTPException
 from math import ceil
 from sqlalchemy import select
 
+
 from app.database import async_session_maker
 from app.employees.models import Employee
-from app.employees.schemas import EmployeeFilter, EmployeeOut, EmployeePage
+from app.employees.schemas import (
+    EmployeeBase,
+    EmployeeCreateResponse,
+    EmployeeFilter,
+    EmployeeOut,
+    EmployeePage,
+    EmployeeUpdate,
+)
 from app.repository.employees import (
     add_employee,
     find_employee_by_id,
@@ -18,17 +26,16 @@ from app.repository.employees import (
 from app.repository.employees import delete_employee as delete_employee_by_id
 
 
-async def employee_list(filters: EmployeeFilter,
-                        page: int, size: int) -> EmployeePage:
-    """Обрабатывает фильтры перед передачей в репозиторий."""
+async def employee_list(
+    filters: EmployeeFilter,
+    page: int,
+    size: int
+) -> EmployeePage:
+    """Возвращает список данных отфильтрованных работников."""
     async with async_session_maker() as session:
-        data = await get_employee_filtered(session, filters)
-
-    total = len(data)
-    start = (page - 1) * size
-    end = start + size
-    items = data[start:end]
-
+        items, total = await get_employee_filtered(
+            session, filters, page, size
+        )
     return EmployeePage(
         items=[EmployeeOut.model_validate(item) for item in items],
         total=total,
@@ -38,30 +45,40 @@ async def employee_list(filters: EmployeeFilter,
     )
 
 
-async def employee_detail(employee_id: int) -> Employee | None:
+async def employee_detail(employee_id: int) -> EmployeeOut:
     """Запрашивает в БД работника по id."""
     async with async_session_maker() as session:
-        return await find_employee_by_id(session, employee_id)
+        employee = await find_employee_by_id(session, employee_id)
+        if employee is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f'Работник с id = {employee_id} не найден'
+            )
+        return EmployeeOut.model_validate(employee)
 
 
-async def create_employee(**employee: dict) -> Employee:
+async def create_employee(employee: EmployeeBase) -> EmployeeCreateResponse:
     """Добавляет нового работника."""
     async with async_session_maker() as session:
         if await is_employee_exist(
-            session, employee['email'], employee['phone_number'],
+            session, employee.email, employee.phone_number,
         ):
             raise HTTPException(
                 status_code=400,
                 detail='Работник с таким email и/или номером телефона'
                 ' существует',
             )
-        return await add_employee(session, employee)
+        created = await add_employee(session, employee.model_dump())
+        return EmployeeCreateResponse(
+            message='Работник успешно добавлен',
+            employee=EmployeeOut.model_validate(created),
+        )
 
 
 async def patch_employee(
     employee_id: int,
-    **employee_data: dict,
-) -> Employee | None:
+    employee_data: EmployeeUpdate,
+) -> EmployeeOut:
     """Обновляет конкретного работника.
 
     Если работник не найден -- выбрасывает ошибку 404.
@@ -73,13 +90,20 @@ async def patch_employee(
                 status_code=404,
                 detail=f'Работник с id = {employee_id} не найден',
             )
-        return await update_employee(
-            session, employee_id, **employee_data,
+        updated = await update_employee(
+            session, employee_id,
+            **employee_data.model_dump(exclude_unset=True),
         )
+        if updated is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f'Работник с id = {employee_id} не найден'
+            )
+        return EmployeeOut.model_validate(updated)
 
 
 async def delete_employee(employee_id: int) -> dict:
-    """Запрашивает в БД работника по id."""
+    """Обрабатывает удаление работника по id."""
     async with async_session_maker() as session:
         employee = await find_employee_by_id(session, employee_id)
         if employee is None:
@@ -87,4 +111,10 @@ async def delete_employee(employee_id: int) -> dict:
                 status_code=404,
                 detail=f'Работник с id = {employee_id} не найден',
             )
-        return await delete_employee_by_id(session, employee_id)
+        result = await delete_employee_by_id(session, employee_id)
+        if not result:
+            raise HTTPException(
+                status_code=404,
+                detail=f'Работник с id = {employee_id} не найден'
+            )
+        return {'message': 'Данные работника успешно удалены'}
