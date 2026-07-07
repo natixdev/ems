@@ -1,35 +1,25 @@
 """Вся бизнес-логика."""
 
-from datetime import date
-from typing import Any
 
 from fastapi import HTTPException
 
 from app.database import async_session_maker
 from app.employees.models import Employee
+from app.employees.schemas import EmployeeFilter
 from app.repository.employees import (
     add_employee,
     find_employee_by_id,
-    get_all_employees,
+    get_employee_filter,
     is_employee_exist,
     update_employee,
 )
 from app.repository.employees import delete_employee as delete_employee_by_id
 
 
-async def employee_list(**filters: dict[str, Any]) -> list:
-    """Обрабатывает фильтры перед передачей в репозиторий.
-
-    Преобразует возраст (age) в диапазон дат рождения.
-    """
-    age = filters.pop('age', None)
-    if age is not None:
-        today = date.today()
-        year = today.year - age
-        filters['date_of_birth_start'] = date(year, 1, 1)
-        filters['date_of_birth_end'] = date(year, 12, 31)
+async def employee_list(filters: EmployeeFilter) -> list[Employee]:
+    """Обрабатывает фильтры перед передачей в репозиторий."""
     async with async_session_maker() as session:
-        return await get_all_employees(session, **filters)
+        return await get_employee_filter(session, filters)
 
 
 async def employee_detail(employee_id: int) -> Employee | None:

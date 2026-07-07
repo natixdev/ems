@@ -1,10 +1,11 @@
 """Показывает эндпоинты."""
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
+from fastapi_filter import FilterDepends
 
 from app.employees.schemas import (
     EmployeeBase,
-    EmployeeFilters,
+    EmployeeFilter,
     EmployeeOut,
     EmployeeUpdate,
 )
@@ -15,7 +16,7 @@ router = APIRouter(prefix='/employees', tags=['Управление работн
 
 @router.get('/', summary='Получить список сотрудников')
 async def employee_list(
-    filters: EmployeeFilters = Depends(),
+    filters: EmployeeFilter = FilterDepends(EmployeeFilter),
 ) -> list[EmployeeOut]:
     """Возвращает список работников с учетом фильтров (если указаны).
 
@@ -25,9 +26,7 @@ async def employee_list(
       - age: возраст (будет найден по году рождения)
       - phone_number: точное совпадение.
     """
-    return await employee_service.employee_list(
-        **filters.model_dump(exclude_none=True),
-    )
+    return await employee_service.employee_list(filters)
 
 
 @router.post(

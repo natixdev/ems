@@ -2,7 +2,12 @@ import re
 from datetime import date
 from enum import Enum
 
+from fastapi_filter.contrib.sqlalchemy import Filter
 from pydantic import BaseModel, EmailStr, Field, HttpUrl, field_validator
+from sqlalchemy.orm import Query
+from sqlalchemy.sql.selectable import Select
+
+from .models import Employee
 
 PHONE_PATTERN = r'^(\+7)\d{10}$'
 MIN_AGE = 14
@@ -81,15 +86,41 @@ class EmployeeOut(BaseModel):
         from_attributes = True
 
 
-class EmployeeFilters(BaseModel):
+class EmployeeFilter(Filter):
     """Класс для фильтрации списка сотрудников."""
 
     id: int | None = None
-    first_name: str | None = None
-    middle_name: str | None = None
-    last_name: str | None = None
+    last_name__ilike: str | None = None
+    first_name__ilike: str | None = None
+    middle_name__ilike: str | None = None
     age: int | None = None
     phone_number: str | None = None
+
+    class Constants(Filter.Constants):
+        model = Employee
+
+    class Config:
+        allow_population_by_field_name = True
+
+    def filter(self, query: Query | Select) -> Query | Select:
+        """Преобразует возраст (age) в диапазон дат рождения."""
+        age = self.age
+        self.age = None
+        query = super().filter(query)
+
+        if age is not None:
+            today = date.today()
+            year = today.year - age
+            birth_date_start = date(year - 1, today.month, today.day + 1) if (
+                today.day < 28
+            ) else date(year - 1, today.month, 28)
+            birth_date_end = date(year, today.month, today.day)
+
+            query = query.where(
+                Employee.date_of_birth >= birth_date_start,
+                Employee.date_of_birth <= birth_date_end,
+            )
+        return query
 
 
 class EmployeeUpdate(EmployeeValidatorMixin, BaseModel):

@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.employees.models import Employee
+from app.employees.schemas import EmployeeFilter
 
 ILIKE_FIELDS = [
     'first_name',
@@ -14,6 +15,16 @@ ILIKE_FIELDS = [
     'last_name',
     'phone_number',
 ]
+
+
+async def get_employee_filter(
+    session: AsyncSession,
+    filters: EmployeeFilter,
+) -> list[Employee]:
+    """Фильтрует список работников по заданным фильтрам."""
+    query = filters.filter(select(Employee))
+    result = await session.execute(query)
+    return result.scalars().all()
 
 
 async def get_all_employees(
