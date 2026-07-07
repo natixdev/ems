@@ -100,7 +100,7 @@ class EmployeeFilter(Filter):
         model = Employee
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
     def filter(self, query: Query | Select) -> Query | Select:
         """Преобразует возраст (age) в диапазон дат рождения."""
@@ -134,3 +134,11 @@ class EmployeeUpdate(EmployeeValidatorMixin, BaseModel):
     photo: HttpUrl | None = None
     phone_number: str | None = None
     email: EmailStr | None = None
+
+
+class EmployeePage(BaseModel):
+    items: list[EmployeeOut]
+    total: int
+    page: int
+    size: int
+    pages: int

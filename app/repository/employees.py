@@ -17,42 +17,12 @@ ILIKE_FIELDS = [
 ]
 
 
-async def get_employee_filter(
+async def get_employee_filtered(
     session: AsyncSession,
     filters: EmployeeFilter,
 ) -> list[Employee]:
     """Фильтрует список работников по заданным фильтрам."""
     query = filters.filter(select(Employee))
-    result = await session.execute(query)
-    return result.scalars().all()
-
-
-async def get_all_employees(
-    session: AsyncSession,
-    **filters: dict[str, Any],
-) -> list[Employee]:
-    """Возвращает список работников с учетом фильтров."""
-    query = select(Employee)
-
-    date_start = filters.pop('date_of_birth_start', None)
-    date_end = filters.pop('date_of_birth_end', None)
-    if date_start and date_end:
-        query = query.filter(
-            Employee.date_of_birth >= date_start,
-            Employee.date_of_birth <= date_end,
-        )
-
-    for field in ILIKE_FIELDS:
-        value = filters.pop(field, None)
-        if value:
-            value = str(value).strip()
-            if value:
-                column = getattr(Employee, field)
-                query = query.filter(column.ilike(f'%{value}%'))
-
-    if filters:
-        query = query.filter_by(**filters)
-
     result = await session.execute(query)
     return result.scalars().all()
 

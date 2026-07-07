@@ -2,24 +2,40 @@
 
 
 from fastapi import HTTPException
+from math import ceil
+from sqlalchemy import select
 
 from app.database import async_session_maker
 from app.employees.models import Employee
-from app.employees.schemas import EmployeeFilter
+from app.employees.schemas import EmployeeFilter, EmployeeOut, EmployeePage
 from app.repository.employees import (
     add_employee,
     find_employee_by_id,
-    get_employee_filter,
+    get_employee_filtered,
     is_employee_exist,
     update_employee,
 )
 from app.repository.employees import delete_employee as delete_employee_by_id
 
 
-async def employee_list(filters: EmployeeFilter) -> list[Employee]:
+async def employee_list(filters: EmployeeFilter,
+                        page: int, size: int) -> EmployeePage:
     """Обрабатывает фильтры перед передачей в репозиторий."""
     async with async_session_maker() as session:
-        return await get_employee_filter(session, filters)
+        data = await get_employee_filtered(session, filters)
+
+    total = len(data)
+    start = (page - 1) * size
+    end = start + size
+    items = data[start:end]
+
+    return EmployeePage(
+        items=[EmployeeOut.model_validate(item) for item in items],
+        total=total,
+        page=page,
+        size=size,
+        pages=ceil(total / size) if total else 0,
+    )
 
 
 async def employee_detail(employee_id: int) -> Employee | None:
