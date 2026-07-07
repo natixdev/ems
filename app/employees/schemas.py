@@ -7,13 +7,13 @@ from pydantic import BaseModel, EmailStr, Field, HttpUrl, field_validator
 from sqlalchemy.orm import Query
 from sqlalchemy.sql.selectable import Select
 
-from .models import Employee
 from .constants import (
+    INVALID_AGE_MAX,
+    INVALID_AGE_MIN,
     INVALID_BIRTH_DATE_FUTURE,
     INVALID_PHONE_FORMAT,
-    INVALID_AGE_MIN,
-    INVALID_AGE_MAX
 )
+from .models import Employee
 
 PHONE_PATTERN = r'^(\+7)\d{10}$'
 MIN_AGE = 14

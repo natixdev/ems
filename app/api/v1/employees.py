@@ -7,8 +7,8 @@ from app.employees.schemas import (
     EmployeeBase,
     EmployeeCreateResponse,
     EmployeeFilter,
-    EmployeePage,
     EmployeeOut,
+    EmployeePage,
     EmployeeUpdate,
 )
 from app.service import employees as employee_service
@@ -19,7 +19,7 @@ router = APIRouter(prefix='/employees', tags=['Управление работн
 @router.get(
     '/',
     response_model=EmployeePage,
-    summary='Получить список сотрудников'
+    summary='Получить список сотрудников',
 )
 async def employee_list(
     filters: EmployeeFilter = FilterDepends(EmployeeFilter),
@@ -52,7 +52,7 @@ async def create_employee(employee: EmployeeBase) -> EmployeeCreateResponse:
 @router.get(
     '/{employee_id}',
     response_model=EmployeeOut,
-    summary='Получить данные конкретного сотрудника'
+    summary='Получить данные конкретного сотрудника',
 )
 async def employee_detail(employee_id: int) -> EmployeeOut:
     """Возвращает данные конкретного сотрудника."""

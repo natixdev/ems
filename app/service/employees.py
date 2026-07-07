@@ -1,10 +1,17 @@
 """Вся бизнес-логика."""
 
 
-from fastapi import HTTPException
 from math import ceil
 
+from fastapi import HTTPException
+
 from app.database import async_session_maker
+from app.employees.constants import (
+    EMPLOYEE_ALREADY_EXISTS,
+    EMPLOYEE_CREATED,
+    EMPLOYEE_DELETED,
+    EMPLOYEE_NOT_FOUND,
+)
 from app.employees.schemas import (
     EmployeeBase,
     EmployeeCreateResponse,
@@ -19,25 +26,21 @@ from app.repository.employees import (
     get_employee_filtered,
     is_employee_exist,
     update_employee,
-    delete_employee as delete_employee_by_id,
 )
-from app.employees.constants import (
-    EMPLOYEE_ALREADY_EXISTS,
-    EMPLOYEE_NOT_FOUND,
-    EMPLOYEE_DELETED,
-    EMPLOYEE_CREATED,
+from app.repository.employees import (
+    delete_employee as delete_employee_by_id,
 )
 
 
 async def employee_list(
     filters: EmployeeFilter,
     page: int,
-    size: int
+    size: int,
 ) -> EmployeePage:
     """Возвращает список данных отфильтрованных работников."""
     async with async_session_maker() as session:
         items, total = await get_employee_filtered(
-            session, filters, page, size
+            session, filters, page, size,
         )
     return EmployeePage(
         items=[EmployeeOut.model_validate(item) for item in items],

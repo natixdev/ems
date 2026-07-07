@@ -25,7 +25,7 @@ async def get_employee_filtered(
     """Фильтрует список работников, добавляет пагинацию."""
     base_query = filters.filter(select(Employee))
     total = await session.scalar(
-        select(func.count()).select_from(base_query.subquery())
+        select(func.count()).select_from(base_query.subquery()),
     ) or 0
     query = (
         base_query
@@ -62,7 +62,7 @@ async def is_employee_exist(
 
 async def add_employee(
     session: AsyncSession,
-    employee_data: dict[str, Any]
+    employee_data: dict[str, Any],
 ) -> Employee:
     """Добавляет данные работника в БД."""
     employee = Employee(
