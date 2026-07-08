@@ -14,11 +14,11 @@ from app.employees.schemas import (
 )
 from app.service.employees import EmployeeService
 
-router = APIRouter(prefix='/employees', tags=['Управление работниками'])
+router = APIRouter(prefix='/v1/employees', tags=['Управление работниками'])
 
 
 @router.get(
-    '/',
+    '',
     response_model=EmployeePage,
     summary='Получить список сотрудников',
 )
@@ -41,7 +41,7 @@ async def employee_list(
 
 
 @router.post(
-    '/',
+    '',
     status_code=status.HTTP_201_CREATED,
     response_model=EmployeeCreateResponse,
     summary='Добавить нового сотрудника',

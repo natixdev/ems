@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Карточка работника{% endblock %}
+
+{% block content %}
+<section class="detail-page">
+  <div class="detail-card">
+    <div class="detail-card__header">
+      <div class="detail-card__avatar-wrap">
+        <img
+          class="detail-card__avatar"
+          src="{{ employee.photo if employee.photo and employee.photo != 'None' else url_for('static', path='images/avatars/default.png') }}"
+          alt="Фото {{ employee.last_name }} {{ employee.first_name }}"
+        >
+      </div>
+
+      <div class="detail-card__title">
+        <h2>{{ employee.last_name }} {{ employee.first_name }} {{ employee.middle_name }}</h2>
+        <p>ID: {{ employee.id }}</p>
+      </div>
+
+      <div class="detail-card__actions">
+        <a class="btn btn--secondary" href="{{ url_for('employees_edit', employee_id=employee.id) }}">Изменить</a>
+        <a class="btn btn--ghost" href="{{ url_for('employees_roster') }}">Назад к списку</a>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-item"><span class="detail-item__label">Фамилия</span><span class="detail-item__value">{{ employee.last_name }}</span></div>
+      <div class="detail-item"><span class="detail-item__label">Имя</span><span class="detail-item__value">{{ employee.first_name }}</span></div>
+      <div class="detail-item"><span class="detail-item__label">Отчество</span><span class="detail-item__value">{{ employee.middle_name or "—" }}</span></div>
+      <div class="detail-item"><span class="detail-item__label">Дата рождения</span><span class="detail-item__value">{{ employee.date_of_birth }}</span></div>
+      <div class="detail-item"><span class="detail-item__label">Возраст</span><span class="detail-item__value">{{ employee.age }}</span></div>
+      <div class="detail-item"><span class="detail-item__label">Пол</span><span class="detail-item__value">{{ employee.sex }}</span></div>
+      <div class="detail-item"><span class="detail-item__label">Телефон</span><span class="detail-item__value">{{ employee.phone_number }}</span></div>
+      <div class="detail-item"><span class="detail-item__label">Email</span><span class="detail-item__value">{{ employee.email }}</span></div>
+    </div>
+  </div>
+</section>
+{% endblock %}

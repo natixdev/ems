@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% set page_title = "Реестр работников" %}
+
+{% block title %}Реестр работников{% endblock %}
+
+{% block content %}
+<section class="content-page">
+  {% include "partials/filter_block.html" %}
+  {% include "partials/table_block.html" %}
+  {% include "partials/pagination_block.html" %}
+</section>
+{% endblock %}

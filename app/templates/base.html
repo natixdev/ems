@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Работники{% endblock %}</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', path='css/employee_directory.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="page-shell">
+    {% include "partials/sidebar.html" %}
+
+    <div class="page-main">
+      {% include "partials/header.html" %}
+
+      <main class="content-area">
+        {% block content %}{% endblock %}
+      </main>
+
+      {% include "partials/footer.html" %}
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', path='js/employee_directory.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

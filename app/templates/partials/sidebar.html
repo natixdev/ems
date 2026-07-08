@@ -1,0 +1,15 @@
+<aside class="sidebar">
+  <div class="sidebar__title">Работники</div>
+
+  <nav class="sidebar__nav" aria-label="Навигация">
+    <a class="sidebar__link {% if request.url.path == url_for('employees_roster') %}is-active{% endif %}"
+       href="{{ url_for('employees_roster') }}">
+      Реестр работников
+    </a>
+
+    <a class="sidebar__link {% if request.url.path == url_for('employees_create') %}is-active{% endif %}"
+       href="{{ url_for('employees_create') }}">
+      Добавить работника
+    </a>
+  </nav>
+</aside>

@@ -1,0 +1,32 @@
+<nav class="pagination" aria-label="Пагинация">
+  {% if page > 1 %}
+    <a class="pagination__btn" href="{{ url_for('employees_roster') }}?page={{ page - 1 }}&size={{ size }}" aria-label="Предыдущая страница">←</a>
+  {% else %}
+    <span class="pagination__btn pagination__btn--disabled" aria-label="Предыдущая страница">←</span>
+  {% endif %}
+
+  {% if page_numbers and page_numbers[0] > 1 %}
+    <a class="pagination__page" href="{{ url_for('employees_roster') }}?page=1&size={{ size }}">1</a>
+    {% if page_numbers[0] > 2 %}
+      <span class="pagination__ellipsis">...</span>
+    {% endif %}
+  {% endif %}
+
+  {% for p in page_numbers %}
+    <a class="pagination__page {% if p == page %}pagination__page--active{% endif %}"
+       href="{{ url_for('employees_roster') }}?page={{ p }}&size={{ size }}">{{ p }}</a>
+  {% endfor %}
+
+  {% if page_numbers and page_numbers[-1] < pages %}
+    {% if page_numbers[-1] < pages - 1 %}
+      <span class="pagination__ellipsis">...</span>
+    {% endif %}
+    <a class="pagination__page" href="{{ url_for('employees_roster') }}?page={{ pages }}&size={{ size }}">{{ pages }}</a>
+  {% endif %}
+
+  {% if page < pages %}
+    <a class="pagination__btn" href="{{ url_for('employees_roster') }}?page={{ page + 1 }}&size={{ size }}" aria-label="Следующая страница">→</a>
+  {% else %}
+    <span class="pagination__btn pagination__btn--disabled" aria-label="Следующая страница">→</span>
+  {% endif %}
+</nav>

@@ -1,0 +1,54 @@
+<section class="table-card" aria-label="Реестр работников">
+  <div class="table-responsive">
+    <table class="employees-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Фото</th>
+          <th>ФИО</th>
+          <th>Возраст</th>
+          <th>Телефон</th>
+          <th>Пол</th>
+          <th>Действие</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for worker in workers %}
+        <tr class="employees-table__row" data-href="{{ url_for('employees_detail', employee_id=worker.id) }}">
+          <td>{{ loop.index }}</td>
+
+          <td>
+            <img
+              class="employee-avatar"
+              src="{{ worker.photo if worker.photo and worker.photo != 'None' else url_for('static', path='images/avatars/default.png') }}"
+              alt="Фото {{ worker.full_name }}"
+            >
+          </td>
+
+          <td class="employee-name-cell">{{ worker.full_name }}</td>
+          <td>{{ worker.age }}</td>
+          <td class="employee-phone-cell">{{ worker.phone_number }}</td>
+          <td>{{ worker.sex }}</td>
+
+          <td class="actions">
+            <a
+              class="icon-btn icon-btn--edit"
+              href="{{ url_for('employees_edit', employee_id=worker.id) }}"
+              title="Изменить"
+              aria-label="Изменить">✎</a>
+
+            <form
+              method="post"
+              action="{{ url_for('employees_delete', employee_id=worker.id) }}"
+              class="actions__form"
+              onsubmit="return confirm('Удалить работника?');">
+              <button class="icon-btn icon-btn--delete" type="submit" title="Удалить" aria-label="Удалить">🗑</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>

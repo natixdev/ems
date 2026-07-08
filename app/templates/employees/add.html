@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить работника{% endblock %}
+
+{% block content %}
+<section class="form-page">
+  <div class="form-card">
+    <div class="form-card__header">
+      <h2>Добавить работника</h2>
+      <p>Заполните данные нового сотрудника</p>
+    </div>
+
+    <form class="employee-form" method="post" action="{{ url_for('employees_store') }}" enctype="multipart/form-data">
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="last_name">Фамилия</label>
+          <input
+            id="last_name"
+            name="last_name"
+            type="text"
+            value="{{ form_data.last_name | default('') }}"
+            class="{% if errors.last_name %}is-invalid{% endif %}"
+            required
+          >
+          {% if errors.last_name %}
+            <div class="field-error">{{ errors.last_name }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-field">
+          <label for="first_name">Имя</label>
+          <input
+            id="first_name"
+            name="first_name"
+            type="text"
+            value="{{ form_data.first_name | default('') }}"
+            class="{% if errors.first_name %}is-invalid{% endif %}"
+            required
+          >
+          {% if errors.first_name %}
+            <div class="field-error">{{ errors.first_name }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-field">
+          <label for="middle_name">Отчество</label>
+          <input
+            id="middle_name"
+            name="middle_name"
+            type="text"
+            value="{{ form_data.middle_name | default('') }}"
+          >
+        </div>
+
+        <div class="form-field">
+          <label for="date_of_birth">Дата рождения</label>
+          <input
+            id="date_of_birth"
+            name="date_of_birth"
+            type="date"
+            value="{{ form_data.date_of_birth | default('') }}"
+            class="{% if errors.date_of_birth %}is-invalid{% endif %}"
+            required
+          >
+          {% if errors.date_of_birth %}
+            <div class="field-error">{{ errors.date_of_birth }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-field">
+          <label for="sex">Пол</label>
+          <select
+            id="sex"
+            name="sex"
+            class="{% if errors.sex %}is-invalid{% endif %}"
+            required
+          >
+            <option value="" disabled {% if not form_data.sex %}selected{% endif %}>Выберите пол</option>
+            <option value="Муж." {% if form_data.sex == 'Муж.' %}selected{% endif %}>Муж.</option>
+            <option value="Жен." {% if form_data.sex == 'Жен.' %}selected{% endif %}>Жен.</option>
+          </select>
+          {% if errors.sex %}
+            <div class="field-error">{{ errors.sex }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-field">
+          <label for="phone_number">Телефон</label>
+          <input
+            id="phone_number"
+            name="phone_number"
+            type="text"
+            value="{{ form_data.phone_number | default('') }}"
+            class="{% if errors.phone_number %}is-invalid{% endif %}"
+            required
+          >
+          {% if errors.phone_number %}
+            <div class="field-error">{{ errors.phone_number }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-field">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value="{{ form_data.email | default('') }}"
+            class="{% if errors.email %}is-invalid{% endif %}"
+            required
+          >
+          {% if errors.email %}
+            <div class="field-error">{{ errors.email }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-field">
+          <label>Фото</label>
+          <div class="photo-field">
+            <input id="photo" name="photo" type="file" accept="image/*" hidden>
+            <button class="btn btn--secondary" type="button" id="add-photo-btn">Добавить</button>
+            <span id="photo-name" class="photo-field__name">Файл не выбран</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <a class="btn btn--ghost" href="{{ url_for('employees_roster') }}">Отмена</a>
+        <button class="btn btn--primary" type="submit">Создать</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
